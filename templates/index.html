@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoadSense — Traffic Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface2: #f0f1f4;
+    --border: #dde1e8;
+    --border2: #c8cdd8;
+    --text: #111318;
+    --muted: #6b7280;
+    --accent: #00a885;
+    --accent2: #e85520;
+    --accent3: #5b4fe0;
+    --warn: #d69e00;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 40px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(244,245,247,0.95);
+    backdrop-filter: blur(12px);
+  }
+  .logo {
+    font-family: var(--mono);
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text);
+  }
+  .logo span { color: var(--accent); }
+  .nav-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    text-transform: uppercase;
+    border: 1px solid var(--border2);
+    padding: 4px 10px;
+    border-radius: 3px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 72px 40px 56px;
+    max-width: 680px;
+  }
+  .hero-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 18px;
+    color: var(--text);
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 300;
+    max-width: 500px;
+    line-height: 1.8;
+  }
+
+  /* ── GRID ── */
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  @media (max-width: 768px) {
+    .modules-grid { grid-template-columns: 1fr; }
+    nav { padding: 16px 20px; }
+    .hero { padding: 48px 20px 40px; }
+    .results-panel { padding: 32px 20px; }
+  }
+
+  /* ── MODULE CARD ── */
+  .module-card {
+    background: var(--surface);
+    padding: 36px 32px 32px;
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .module-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-accent, var(--accent));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .module-card:hover::before,
+  .module-card.active::before { transform: scaleX(1); }
+  .module-card:hover { background: var(--surface2); }
+  .module-card.active {
+    background: var(--surface2);
+    outline: 1px solid var(--card-accent, var(--accent));
+  }
+
+  .card-id {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .card-accent-text { color: var(--card-accent, var(--accent)); }
+  .card-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 24px;
+    font-weight: 300;
+  }
+  .card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 5px 10px;
+    border-radius: 2px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+  .badge-img { border-color: var(--accent); color: var(--accent); }
+  .badge-vid { border-color: var(--accent2); color: var(--accent2); }
+
+  /* ── DROP ZONE ── */
+  .drop-zone {
+    display: none;
+    margin-top: 20px;
+    border: 1px dashed var(--border2);
+    border-radius: 4px;
+    padding: 20px 16px;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .module-card.active .drop-zone { display: block; }
+  .drop-zone.dragging {
+    border-color: var(--card-accent, var(--accent));
+    background: rgba(0,168,133,0.04);
+  }
+  .drop-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .drop-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    opacity: 0.4;
+  }
+  .drop-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .drop-sub {
+    font-size: 11px;
+    color: var(--muted);
+    opacity: 0.6;
+    margin-top: 4px;
+  }
+  .file-name {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    margin-top: 8px;
+    word-break: break-all;
+  }
+
+  /* ── INPUT PREVIEW ── */
+  .input-preview {
+    display: none;
+    margin-top: 12px;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .input-preview.visible { display: block; }
+  .input-preview-header {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 12px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .input-preview img,
+  .input-preview video {
+    width: 100%;
+    display: block;
+    max-height: 180px;
+    object-fit: contain;
+    background: var(--bg);
+  }
+  .input-file-info {
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 16px;
+  }
+  .info-chip { color: var(--text); }
+
+  .run-btn {
+    display: none;
+    width: 100%;
+    margin-top: 14px;
+    padding: 11px;
+    background: transparent;
+    border: 1px solid var(--card-accent, var(--accent));
+    color: var(--card-accent, var(--accent));
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .run-btn:hover {
+    background: var(--card-accent, var(--accent));
+    color: #fff;
+  }
+  .module-card.has-file .run-btn { display: block; }
+
+  /* ── PROGRESS ── */
+  .progress-bar {
+    display: none;
+    height: 2px;
+    background: var(--border2);
+    margin-top: 12px;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .module-card.loading .progress-bar { display: block; }
+  .progress-fill {
+    height: 100%;
+    background: var(--card-accent, var(--accent));
+    width: 0%;
+    animation: progress-anim 3s ease-in-out infinite;
+  }
+  @keyframes progress-anim {
+    0% { width: 0%; opacity: 1; }
+    70% { width: 85%; opacity: 1; }
+    100% { width: 100%; opacity: 0; }
+  }
+  .status-text {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-top: 8px;
+    text-transform: uppercase;
+  }
+
+  /* ── RESULTS PANEL ── */
+  .results-panel {
+    padding: 40px 40px 60px;
+    display: none;
+  }
+  .results-panel.visible { display: block; }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .results-module-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 2px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    color: var(--muted);
+  }
+  .results-title {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 18px 20px;
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+  .stat-unit {
+    font-size: 13px;
+    color: var(--muted);
+    margin-left: 4px;
+    font-weight: 400;
+  }
+
+  /* ── IO LAYOUT: input left, output right ── */
+  .io-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 900px) {
+    .io-grid { grid-template-columns: 1fr; }
+  }
+
+  .io-section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .io-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .io-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .output-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 900px) {
+    .output-area { grid-template-columns: 1fr; }
+  }
+
+  .output-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .output-block-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+  }
+  .output-img {
+    width: 100%;
+    display: block;
+    object-fit: contain;
+    max-height: 320px;
+    background: var(--bg);
+  }
+  .output-video {
+    width: 100%;
+    display: block;
+    background: #111;
+    max-height: 320px;
+  }
+
+  /* Input image/video blocks */
+  .input-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .input-block-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--surface2);
+  }
+  .input-block img,
+  .input-block video {
+    width: 100%;
+    display: block;
+    object-fit: contain;
+    max-height: 320px;
+    background: var(--bg);
+  }
+  .input-meta {
+    padding: 10px 16px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    background: var(--surface2);
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .input-meta span { color: var(--text); }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .data-table th {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .data-table td {
+    padding: 9px 16px;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--surface2); }
+  .speed-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .speed-low { background: rgba(0,168,133,0.12); color: var(--accent); }
+  .speed-mid { background: rgba(214,158,0,0.14); color: var(--warn); }
+  .speed-high { background: rgba(232,85,32,0.12); color: var(--accent2); }
+
+  .plate-display {
+    padding: 28px;
+    text-align: center;
+  }
+  .plate-text {
+    font-family: var(--mono);
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    color: var(--accent);
+    padding: 16px 28px;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 12px;
+    background: rgba(0,168,133,0.06);
+  }
+  .plate-conf {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .conf-bar {
+    height: 3px;
+    background: var(--border2);
+    border-radius: 2px;
+    margin: 10px auto;
+    max-width: 200px;
+    overflow: hidden;
+  }
+  .conf-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .error-box {
+    background: rgba(232,85,32,0.07);
+    border: 1px solid var(--accent2);
+    border-radius: 4px;
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent2);
+    letter-spacing: 0.04em;
+    margin-top: 16px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    background: var(--surface);
+  }
+  .footer-modules { display: flex; gap: 20px; }
+  .footer-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); display: inline-block;
+    margin-right: 6px; vertical-align: middle;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Road<span>Sense</span></div>
+  <div class="nav-tag">Traffic Intelligence Platform</div>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">v1.0 / Computer Vision Suite</div>
+  <h1>See every road,<br><em>understand everything.</em></h1>
+  <p>Upload traffic imagery or footage and get instant AI-powered analysis — plate recognition, speed estimation, and full scene segmentation.</p>
+</div>
+
+<div class="modules-grid">
+
+  <!-- PLATECATCH -->
+  <div class="module-card" id="card-platecatch" style="--card-accent: #00a885;" onclick="selectModule('platecatch')">
+    <div class="card-id">Module 01 / Image</div>
+    <div class="card-title"><span class="card-accent-text">Plate</span>Catch</div>
+    <div class="card-desc">Extracts vehicle number plate text using contour detection and EasyOCR. Upload a photo of any vehicle.</div>
+    <span class="card-badge badge-img">⬡ Image input</span>
+
+    <div class="drop-zone" id="drop-platecatch"
+         ondragover="handleDragOver(event, 'platecatch')"
+         ondragleave="handleDragLeave('platecatch')"
+         ondrop="handleDrop(event, 'platecatch')">
+      <input type="file" accept="image/*" onchange="handleFileSelect(event, 'platecatch')">
+      <div class="drop-icon">⬡</div>
+      <div class="drop-text">Drop image here</div>
+      <div class="drop-sub">JPG, PNG, WEBP</div>
+      <div class="file-name" id="file-name-platecatch"></div>
+    </div>
+
+    <!-- Input preview inside card -->
+    <div class="input-preview" id="preview-platecatch">
+      <div class="input-preview-header">Input Preview</div>
+      <img id="preview-img-platecatch" src="" alt="Preview" />
+      <div class="input-file-info" id="preview-meta-platecatch"></div>
+    </div>
+
+    <button class="run-btn" id="btn-platecatch" onclick="runModule('platecatch')">
+      ▶ Run PlateCatch
+    </button>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="status-text" id="status-platecatch"></div>
+  </div>
+
+  <!-- VELOCITYCAM -->
+  <div class="module-card" id="card-velocitycam" style="--card-accent: #e85520;" onclick="selectModule('velocitycam')">
+    <div class="card-id">Module 02 / Video</div>
+    <div class="card-title"><span class="card-accent-text">Velocity</span>Cam</div>
+    <div class="card-desc">Tracks vehicles frame-by-frame with YOLOv8 + ByteTrack and calculates real-world speed in km/h.</div>
+    <span class="card-badge badge-vid">◈ Video input</span>
+
+    <div class="drop-zone" id="drop-velocitycam"
+         ondragover="handleDragOver(event, 'velocitycam')"
+         ondragleave="handleDragLeave('velocitycam')"
+         ondrop="handleDrop(event, 'velocitycam')">
+      <input type="file" accept="video/*" onchange="handleFileSelect(event, 'velocitycam')">
+      <div class="drop-icon">◈</div>
+      <div class="drop-text">Drop video here</div>
+      <div class="drop-sub">MP4, AVI, MOV</div>
+      <div class="file-name" id="file-name-velocitycam"></div>
+    </div>
+
+    <!-- Input preview inside card -->
+    <div class="input-preview" id="preview-velocitycam">
+      <div class="input-preview-header">Input Preview</div>
+      <video id="preview-vid-velocitycam" controls muted playsinline></video>
+      <div class="input-file-info" id="preview-meta-velocitycam"></div>
+    </div>
+
+    <button class="run-btn" id="btn-velocitycam" onclick="runModule('velocitycam')">
+      ▶ Run VelocityCam
+    </button>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="status-text" id="status-velocitycam"></div>
+  </div>
+
+  <!-- URBANPULSE -->
+  <div class="module-card" id="card-urbanpulse" style="--card-accent: #5b4fe0;" onclick="selectModule('urbanpulse')">
+    <div class="card-id">Module 03 / Image</div>
+    <div class="card-title"><span class="card-accent-text">Urban</span>Pulse</div>
+    <div class="card-desc">Pixel-level scene segmentation with DeepLabv3. Separates pedestrians, vehicles, and background zones.</div>
+    <span class="card-badge" style="border-color: #5b4fe0; color: #5b4fe0;">⬡ Image input</span>
+
+    <div class="drop-zone" id="drop-urbanpulse"
+         ondragover="handleDragOver(event, 'urbanpulse')"
+         ondragleave="handleDragLeave('urbanpulse')"
+         ondrop="handleDrop(event, 'urbanpulse')">
+      <input type="file" accept="image/*" onchange="handleFileSelect(event, 'urbanpulse')">
+      <div class="drop-icon">⬡</div>
+      <div class="drop-text">Drop image here</div>
+      <div class="drop-sub">JPG, PNG, WEBP</div>
+      <div class="file-name" id="file-name-urbanpulse"></div>
+    </div>
+
+    <!-- Input preview inside card -->
+    <div class="input-preview" id="preview-urbanpulse">
+      <div class="input-preview-header">Input Preview</div>
+      <img id="preview-img-urbanpulse" src="" alt="Preview" />
+      <div class="input-file-info" id="preview-meta-urbanpulse"></div>
+    </div>
+
+    <button class="run-btn" id="btn-urbanpulse" onclick="runModule('urbanpulse')">
+      ▶ Run UrbanPulse
+    </button>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="status-text" id="status-urbanpulse"></div>
+  </div>
+
+</div>
+
+<!-- RESULTS PANEL -->
+<div class="results-panel" id="results-panel">
+  <div class="results-header">
+    <div class="results-module-tag" id="results-tag">—</div>
+    <div class="results-title" id="results-title">Analysis Complete</div>
+  </div>
+  <div id="results-content"></div>
+</div>
+
+<footer>
+  <div><span class="footer-dot"></span>RoadSense Platform</div>
+  <div class="footer-modules">
+    <span>PlateCatch</span>
+    <span>VelocityCam</span>
+    <span>UrbanPulse</span>
+  </div>
+</footer>
+
+<script>
+const selectedFiles = {};
+const inputObjectURLs = {};
+
+function selectModule(mod) {
+  document.querySelectorAll('.module-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('card-' + mod).classList.add('active');
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function showInputPreview(mod, file) {
+  const previewEl = document.getElementById('preview-' + mod);
+  const metaEl = document.getElementById('preview-meta-' + mod);
+
+  // Revoke previous object URL if any
+  if (inputObjectURLs[mod]) URL.revokeObjectURL(inputObjectURLs[mod]);
+  const url = URL.createObjectURL(file);
+  inputObjectURLs[mod] = url;
+
+  if (mod === 'velocitycam') {
+    const vid = document.getElementById('preview-vid-' + mod);
+    vid.src = url;
+  } else {
+    const img = document.getElementById('preview-img-' + mod);
+    img.src = url;
+  }
+
+  const ext = file.name.split('.').pop().toUpperCase();
+  metaEl.innerHTML = `<span>${file.name}</span> &nbsp;·&nbsp; <span class="info-chip">${formatBytes(file.size)}</span> &nbsp;·&nbsp; <span class="info-chip">${ext}</span>`;
+
+  previewEl.classList.add('visible');
+}
+
+function handleFileSelect(e, mod) {
+  e.stopPropagation();
+  const file = e.target.files[0];
+  if (!file) return;
+  selectedFiles[mod] = file;
+  document.getElementById('file-name-' + mod).textContent = '';
+  document.getElementById('card-' + mod).classList.add('has-file');
+  showInputPreview(mod, file);
+}
+
+function handleDragOver(e, mod) {
+  e.preventDefault();
+  document.getElementById('drop-' + mod).classList.add('dragging');
+}
+
+function handleDragLeave(mod) {
+  document.getElementById('drop-' + mod).classList.remove('dragging');
+}
+
+function handleDrop(e, mod) {
+  e.preventDefault();
+  handleDragLeave(mod);
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  selectedFiles[mod] = file;
+  document.getElementById('file-name-' + mod).textContent = '';
+  document.getElementById('card-' + mod).classList.add('has-file');
+  showInputPreview(mod, file);
+}
+
+function setLoading(mod, loading, msg) {
+  const card = document.getElementById('card-' + mod);
+  const status = document.getElementById('status-' + mod);
+  if (loading) {
+    card.classList.add('loading');
+    status.textContent = msg || 'Processing...';
+  } else {
+    card.classList.remove('loading');
+    status.textContent = '';
+  }
+}
+
+async function runModule(mod) {
+  const file = selectedFiles[mod];
+  if (!file) return;
+
+  setLoading(mod, true, 'Uploading & analysing...');
+
+  const form = new FormData();
+  form.append('file', file);
+
+  try {
+    const res = await fetch('/api/' + mod, { method: 'POST', body: form });
+    const data = await res.json();
+    setLoading(mod, false);
+
+    if (data.error) {
+      showError(mod, data.error);
+      return;
+    }
+
+    renderResults(mod, data, file);
+
+  } catch (err) {
+    setLoading(mod, false);
+    showError(mod, err.message);
+  }
+}
+
+function showError(mod, msg) {
+  const panel = document.getElementById('results-panel');
+  const content = document.getElementById('results-content');
+  document.getElementById('results-tag').textContent = mod.toUpperCase();
+  document.getElementById('results-title').textContent = 'Error';
+  content.innerHTML = `<div class="error-box">ERR / ${escHtml(msg)}</div>`;
+  panel.classList.add('visible');
+  panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function speedClass(s) {
+  if (s < 60) return 'speed-low';
+  if (s < 100) return 'speed-mid';
+  return 'speed-high';
+}
+
+function inputBlockHTML(mod, file) {
+  const url = inputObjectURLs[mod] || '';
+  const isVideo = mod === 'velocitycam';
+  const ext = file.name.split('.').pop().toUpperCase();
+  const mediaEl = isVideo
+    ? `<video controls muted playsinline src="${url}" style="width:100%;display:block;max-height:320px;background:#111;"></video>`
+    : `<img src="${url}" style="width:100%;display:block;max-height:320px;object-fit:contain;background:var(--bg);" alt="Input" />`;
+
+  return `
+    <div class="input-block">
+      <div class="input-block-header">Input File</div>
+      ${mediaEl}
+      <div class="input-meta">
+        <span style="color:var(--muted)">Name:</span><span>${escHtml(file.name)}</span>
+        <span style="color:var(--muted)">Size:</span><span>${formatBytes(file.size)}</span>
+        <span style="color:var(--muted)">Type:</span><span>${ext}</span>
+      </div>
+    </div>`;
+}
+
+function renderResults(mod, data, file) {
+  const panel = document.getElementById('results-panel');
+  const tag = document.getElementById('results-tag');
+  const title = document.getElementById('results-title');
+  const content = document.getElementById('results-content');
+
+  panel.classList.add('visible');
+
+  if (mod === 'platecatch') {
+    tag.textContent = 'PlateCatch / OCR';
+    title.textContent = 'Plate Detection Result';
+    const conf = Math.round(data.confidence * 100);
+    content.innerHTML = `
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Plate Text</div>
+          <div class="stat-value" style="font-size:22px; color:var(--accent); letter-spacing:0.1em;">
+            ${data.plate_text || '—'}
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">OCR Confidence</div>
+          <div class="stat-value">${conf}<span class="stat-unit">%</span></div>
+        </div>
+      </div>
+
+      <div class="io-section-label"><span class="io-dot" style="background:#00a885"></span>Input → Output</div>
+      <div class="io-grid">
+        ${inputBlockHTML(mod, file)}
+        <div class="output-block">
+          <div class="output-block-header">
+            <span>Cropped Plate Region</span>
+            <a href="${data.output_image}" download style="color:var(--accent); font-size:10px; text-decoration:none;">↓ Download</a>
+          </div>
+          <img src="${data.output_image}" class="output-img" alt="Plate region" />
+        </div>
+      </div>
+
+      <div class="output-area" style="grid-template-columns:1fr;">
+        <div class="output-block">
+          <div class="output-block-header"><span>Extracted Data</span></div>
+          <div class="plate-display">
+            <div class="plate-text">${data.plate_text || 'NOT DETECTED'}</div>
+            <div class="conf-bar"><div class="conf-fill" style="width:${conf}%"></div></div>
+            <div class="plate-conf">Confidence: ${conf}%</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  else if (mod === 'velocitycam') {
+    tag.textContent = 'VelocityCam / Speed';
+    title.textContent = 'Speed Estimation Result';
+    const rows = (data.speed_data || []).map(v => `
+      <tr>
+        <td>#${v.vehicle_id}</td>
+        <td><span class="speed-pill ${speedClass(v.speed_kmh)}">${v.speed_kmh} km/h</span></td>
+      </tr>`).join('');
+
+    content.innerHTML = `
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Vehicles Tracked</div>
+          <div class="stat-value">${data.vehicles_tracked}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Speed</div>
+          <div class="stat-value">${data.avg_speed_kmh}<span class="stat-unit">km/h</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Max Speed</div>
+          <div class="stat-value" style="color:var(--accent2)">${data.max_speed_kmh}<span class="stat-unit">km/h</span></div>
+        </div>
+      </div>
+
+      <div class="io-section-label"><span class="io-dot" style="background:#e85520"></span>Input → Output</div>
+      <div class="io-grid">
+        ${inputBlockHTML(mod, file)}
+        <div class="output-block">
+          <div class="output-block-header">
+            <span>Annotated Output Video</span>
+            <a href="${data.output_video}" download style="color:var(--accent2); font-size:10px; text-decoration:none;">↓ Download</a>
+          </div>
+          <video class="output-video" controls autoplay muted playsinline>
+            <source src="${data.output_video}?t=${Date.now()}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+
+      <div class="output-area" style="grid-template-columns:1fr;">
+        <div class="output-block">
+          <div class="output-block-header"><span>Per-Vehicle Speed Log</span></div>
+          <table class="data-table">
+            <thead><tr><th>Vehicle ID</th><th>Speed</th></tr></thead>
+            <tbody>${rows || '<tr><td colspan="2" style="color:var(--muted); padding:16px;">No speed data yet</td></tr>'}</tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
+  else if (mod === 'urbanpulse') {
+    tag.textContent = 'UrbanPulse / Segmentation';
+    title.textContent = 'Scene Segmentation Result';
+
+    content.innerHTML = `
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Pedestrian Blobs</div>
+          <div class="stat-value" style="color:#5b4fe0">${data.pedestrian_count}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Vehicle Blobs</div>
+          <div class="stat-value" style="color:var(--accent2)">${data.vehicle_count}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pedestrian Area</div>
+          <div class="stat-value">${data.pedestrian_pixel_pct}<span class="stat-unit">%</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Vehicle Area</div>
+          <div class="stat-value">${data.vehicle_pixel_pct}<span class="stat-unit">%</span></div>
+        </div>
+      </div>
+
+      <div class="io-section-label"><span class="io-dot" style="background:#5b4fe0"></span>Input → Output</div>
+      <div class="io-grid">
+        ${inputBlockHTML(mod, file)}
+        <div class="output-block">
+          <div class="output-block-header">
+            <span>Segmentation Overlay (60% orig + 40% mask)</span>
+            <a href="${data.output_image}" download style="color:#5b4fe0; font-size:10px; text-decoration:none;">↓ Download</a>
+          </div>
+          <img src="${data.output_image}" class="output-img" style="max-height:320px;" alt="Segmentation result" />
+        </div>
+      </div>
+
+      <div class="stats-row" style="margin-top:8px;">
+        <div class="stat-card" style="border-left: 3px solid #00dcdc;">
+          <div class="stat-label">Pedestrian Legend</div>
+          <div style="width:24px; height:8px; background:#00dcdc; border-radius:2px; margin-top:8px;"></div>
+        </div>
+        <div class="stat-card" style="border-left: 3px solid var(--accent2);">
+          <div class="stat-label">Vehicle Legend</div>
+          <div style="width:24px; height:8px; background:var(--accent2); border-radius:2px; margin-top:8px;"></div>
+        </div>
+      </div>`;
+  }
+
+  panel.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
